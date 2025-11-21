@@ -1,0 +1,17 @@
+import Koa from "koa";
+import { UserService } from "../services/UserService.js";
+
+const userService = new UserService();
+
+class UserController {
+  async getAll(context: Koa.Context) {
+    await userService.getAll(context);
+  }
+   
+  async show(context: Koa.Context, param: string) {
+    await userService.getUserById(context, id);
+  }
+
+}
+
+export default UserController;

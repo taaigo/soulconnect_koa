@@ -1,11 +1,21 @@
-import prisma from "../services/prisma.js";
 import Koa from "koa";
-import UserService from "../services/UserService.js";
+import { UserService } from "../services/UserService.js";
+
+const userService = new UserService();
 
 class UserController {
-  async index(context: Koa.Context) {
-    const users = await prisma.user.findMany();
-    context.body = users;
+  async getAll(context: Koa.Context) {
+    await userService.getAll(context);
+  }
+   
+  async show(context: Koa.Context) {
+    const id: number = parseInt(context.params.id);
+    if (isNaN(id)) {
+      context.status = 400;
+      context.body = {error: "invalid id"};
+      return;
+    }
+    await userService.getUserById(context, id);
   }
 
   async register(ctx: Koa.Context) {
