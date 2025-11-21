@@ -8,13 +8,7 @@ class UserController {
     await userService.getAll(context);
   }
    
-  async show(context: Koa.Context) {
-    const id: number = parseInt(context.params.id);
-    if (isNaN(id)) {
-      context.status = 400;
-      context.body = {error: "invalid id"};
-      return;
-    }
+  async show(context: Koa.Context, param: string) {
     await userService.getUserById(context, id);
   }
 

@@ -6,9 +6,12 @@ import UserController from "../controllers/UserController.js";
 const router = new Router();
 const controller = new UserController();
 
-router.get('/', (context: Context) => {
-  const message = controller.index(context);
-  context.body = message;
+router.get('/', async (context: Context) => {
+  await controller.getAll(context);
+});
+
+router.get("/:id", async (context: Context) => {
+  await controller.show(context);
 });
 
 

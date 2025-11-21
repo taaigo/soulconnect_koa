@@ -17,8 +17,10 @@ datasource db {
 model User {
   id         Int        @id @default(autoincrement())
   name       String       
+  /// 0 for male, 1 for female, 2 for other
+  gender     Int
   /// 0 - 100 value 0, banned 45, unverified user (no email verification) 50, user 100, admin 
-  privilige  Int
+  privilege  Int
   email      String     @unique
   password   String
   createdAt  DateTime   @default(now())
