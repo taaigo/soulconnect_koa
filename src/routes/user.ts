@@ -6,13 +6,9 @@ import UserController from "../controllers/UserController.js";
 const router = new Router();
 const controller = new UserController();
 
-router.get('/', async (context: Context) => {
-  await controller.getAll(context);
-});
-
-router.get("/:id", async (context: Context) => {
-  await controller.show(context);
-});
-
+router.get('/', async (context: Context) => await controller.index(context));
+router.post('/register', async (ctx: Context) => await controller.register(ctx));
+router.post('/login', async (ctx: Context) => await controller.login(ctx));
+router.get('/verify', async (ctx: Context) => await controller.verify(ctx));
 
 export default router;
