@@ -1,5 +1,4 @@
 import Koa from "koa";
-import type { User } from "../generated/prisma/client.js";
 import prisma from "../services/prisma.js";
 import { UserViews, type UserTypes } from "../types/User.js";
 
