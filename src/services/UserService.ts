@@ -1,6 +1,8 @@
 import Koa from "koa";
 import prisma from "../services/prisma.js";
 import { UserViews, type UserTypes } from "../types/User.js";
+import type { User } from "../generated/prisma/client.js";
+import argon2 from "argon2";
 
 export class UserService {
   async getAll(context: Koa.Context) {
@@ -38,6 +40,26 @@ export class UserService {
       context.status = 500;
       context.body = {error: err};
     }
+    return;
+  }
+
+  async createUser(context: Koa.Context) {
+    context.status = 200;
+    context.body = context.request.body; 
+
+    const requestBody: UserTypes.FormData = JSON.parse(context.request.rawBody);
+
+    const hashedPassword: string = await argon2.hash(requestBody.password);
+
+    const user: User | null = await prisma.user.create({
+      data: {
+        name: requestBody.name,
+        gender: requestBody.gender,
+        email: requestBody.email,
+        password: hashedPassword,
+        privilege: 45,
+      }
+    });
     return;
   }
 }

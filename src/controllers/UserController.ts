@@ -7,7 +7,7 @@ class UserController {
   async getAll(context: Koa.Context) {
     await userService.getAll(context);
   }
-   
+ 
   async show(context: Koa.Context) {
     const id: number = parseInt(context.params.id);
     if (isNaN(id)) {
@@ -18,6 +18,10 @@ class UserController {
     await userService.getUserById(context, id);
   }
 
+  async createAccount(context: Koa.Context) {
+    await userService.createUser(context);
+    return; 
+  }
 }
 
 export default UserController;

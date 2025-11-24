@@ -14,6 +14,13 @@ export namespace UserTypes {
     privilege: number;
     createdAt: Date;
   }
+
+  export interface FormData {
+    name: string;
+    gender: number;
+    email: string;
+    password: string;
+  }
 }
 
 export namespace UserViews {

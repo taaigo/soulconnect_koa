@@ -10,9 +10,12 @@ router.get('/', async (context: Context) => {
   await controller.getAll(context);
 });
 
+router.post("/register", async (context: Context) => {
+  await controller.createAccount(context);
+});
+
 router.get("/:id", async (context: Context) => {
   await controller.show(context);
 });
-
 
 export default router;
