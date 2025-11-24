@@ -52,9 +52,11 @@ export class UserService {
 
       const hashedPassword: string = await argon2.hash(requestBody.password);
 
-      if (await prisma.user.findUnique({
-        where: { email: requestBody.email },
-      })) {
+      const existingEmailUser = await prisma.user.findUnique({
+        where: { email: requestBody.email }
+      });
+
+      if (existingEmailUser) {
         context.status = 409;
         context.body = {error: "Email already in use"};
         return;
