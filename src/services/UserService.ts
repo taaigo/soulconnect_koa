@@ -47,19 +47,35 @@ export class UserService {
     context.status = 200;
     context.body = context.request.body; 
 
-    const requestBody: UserTypes.FormData = JSON.parse(context.request.rawBody);
+    try {
+      const requestBody: UserTypes.FormData = JSON.parse(context.request.rawBody);
 
-    const hashedPassword: string = await argon2.hash(requestBody.password);
+      const hashedPassword: string = await argon2.hash(requestBody.password);
 
-    const user: User | null = await prisma.user.create({
-      data: {
-        name: requestBody.name,
-        gender: requestBody.gender,
-        email: requestBody.email,
-        password: hashedPassword,
-        privilege: 45,
+      if (await prisma.user.findUnique({
+        where: { email: requestBody.email },
+      })) {
+        context.status = 409;
+        context.body = {error: "Email already in use"};
+        return;
       }
-    });
+
+      const user: User | null = await prisma.user.create({
+        data: {
+          name: requestBody.name,
+          gender: requestBody.gender,
+          email: requestBody.email,
+          password: hashedPassword,
+          privilege: 45,
+        }
+      });
+
+      context.status = 200;
+      context.body = {ok: true, data: user};
+    } catch (err) {
+      context.status = 500;
+      context.body = {error: err};
+    }
     return;
   }
 }
