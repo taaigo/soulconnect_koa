@@ -14,6 +14,10 @@ router.post("/register", async (context: Context) => {
   await controller.createAccount(context);
 });
 
+router.post("/login", async (context: Context) => {
+  await controller.login(context);
+});
+
 router.get("/:id", async (context: Context) => {
   await controller.show(context);
 });

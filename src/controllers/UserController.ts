@@ -1,4 +1,4 @@
-import Koa from "koa";
+import Koa, { type Context } from "koa";
 import { UserService } from "../services/UserService.js";
 
 const userService = new UserService();
@@ -21,6 +21,9 @@ class UserController {
   async createAccount(context: Koa.Context) {
     await userService.createUser(context);
     return; 
+  }
+  async login(context: Context) {
+    await userService.login(context);
   }
 }
 

@@ -24,4 +24,9 @@ model User {
   email      String     @unique
   password   String
   createdAt  DateTime   @default(now())
+
+  // Email verificatie
+  emailVerified       Boolean   @default(false)
+  verificationToken   String?
+  verificationExpiry  DateTime?
 }
