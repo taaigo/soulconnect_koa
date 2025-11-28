@@ -22,6 +22,10 @@ class UserController {
     await userService.createUser(context);
     return; 
   }
+
+  async login(context: Koa.Context) {
+    await userService.login(context);
+  }
 }
 
 export default UserController;

@@ -3,11 +3,12 @@ import prisma from "../services/prisma.js";
 import { UserViews, type UserTypes } from "../types/User.js";
 import type { User } from "../generated/prisma/client.js";
 import argon2 from "argon2";
+import { textSpanContainsTextSpan } from "typescript";
 
 export class UserService {
   async getAll(context: Koa.Context) {
     try {
-      const users: UserTypes.UserResponse [] = await prisma.user.findMany({
+      const users: UserTypes.UserResponse[] = await prisma.user.findMany({
         select: UserViews.asUser
       });
       context.status = 200;
@@ -79,5 +80,51 @@ export class UserService {
       context.body = {error: err};
     }
     return;
+  }
+
+  async login(context: Koa.Context) {
+    try {
+      const { email, password } = JSON.parse(context.request.rawBody);
+      const user = await prisma.user.findUnique({
+        where: { email: email }
+      });
+
+      if (!user) {
+        context.status = 401;
+        context.body = { error: "Invalid email or password" };
+        return;
+      }
+
+      const isValid: boolean = await argon2.verify(user.password, password);
+
+      if (!isValid) {
+        context.status = 401;
+        context.body = { error: "Invalid email or password" };
+        return;
+      }
+
+      if (user.privilege == 45) {
+        context.status = 403;
+        context.body = { error: "Please verify your email before logging in"};
+        return;
+      }
+
+      context.status = 200;
+      context.body = {
+        ok: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          gender: user.gender,
+          email: user.email,
+          privilege: user.privilege
+        }
+      };
+
+    } catch(err) {
+      console.error(err);
+      context.status = 500;
+      context.body = { error: "Server error" };
+    }
   }
 }
