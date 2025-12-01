@@ -6,22 +6,37 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model User {
   id         Int        @id @default(autoincrement())
   name       String       
-  /// 0 for male, 1 for female, 2 for other
-  gender     Int
-  /// 0 - 100 value 0, banned 45, unverified user (no email verification) 50, user 100, admin 
+  /// 0 - 100 value 0 banned, 45 unverified user (no email verification), 50 user, 100 admin 
   privilege  Int
   email      String     @unique
   password   String
+
+  profile    UserProfile?
+
+  // Email verificatie
+  verificationToken   String?
+  verificationExpiry  DateTime?
+
   createdAt  DateTime   @default(now())
+}
+
+model UserProfile {
+  id        Int       @id @default(autoincrement())
+  /// 0 for male, 1 for female, 2 for other
+  gender    Int
+  target_gender Int
+  bio       String?
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
 }
