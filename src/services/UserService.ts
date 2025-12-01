@@ -66,7 +66,6 @@ export class UserService {
       const user: User | null = await prisma.user.create({
         data: {
           name: requestBody.name,
-          gender: requestBody.gender,
           email: requestBody.email,
           password: hashedPassword,
           privilege: 45,
