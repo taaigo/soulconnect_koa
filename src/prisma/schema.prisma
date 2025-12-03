@@ -39,4 +39,22 @@ model UserProfile {
   bio       String?
   userId    Int       @unique
   user      User      @relation(fields: [userId], references: [id])
+  interests InterestsOnProfiles[]
+  createdAt  DateTime   @default(now())
+}
+
+model Interest {
+  id            Int       @id @default(autoincrement())
+  name          String
+  user_profiles InterestsOnProfiles[]
+  createdAt  DateTime   @default(now())
+}
+
+model InterestsOnProfiles {
+  user_profile  UserProfile   @relation(fields: [profile_id], references: [id])
+  profile_id    Int
+  interest      Interest      @relation(fields: [interest_id], references: [id])
+  interest_id   Int
+  createdAt  DateTime   @default(now())
+  @@id([profile_id, interest_id])
 }

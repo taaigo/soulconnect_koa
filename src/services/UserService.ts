@@ -1,9 +1,11 @@
 import Koa from "koa";
 import prisma from "../services/prisma.js";
 import { UserViews, type UserTypes } from "../types/User.js";
-import type { User } from "../generated/prisma/client.js";
+import type { User, UserProfile } from "../generated/prisma/client.js";
 import argon2 from "argon2";
 import { textSpanContainsTextSpan } from "typescript";
+import { request } from "http";
+import { profile } from "console";
 
 export class UserService {
   async getAll(context: Koa.Context) {
@@ -63,17 +65,24 @@ export class UserService {
         return;
       }
 
-      const user: User | null = await prisma.user.create({
+      await prisma.user.create({
         data: {
           name: requestBody.name,
           email: requestBody.email,
           password: hashedPassword,
           privilege: 45,
-        }
+          profile: {
+            create: {
+              gender: requestBody.gender,
+              target_gender: requestBody.target_gender,
+              bio: null,
+            }
+          }
+        },
       });
 
       context.status = 200;
-      context.body = {ok: true, data: user};
+      context.body = {ok: true};
     } catch (err) {
       context.status = 500;
       context.body = {error: err};
@@ -114,9 +123,9 @@ export class UserService {
         user: {
           id: user.id,
           name: user.name,
-          gender: user.gender,
           email: user.email,
-          privilege: user.privilege
+          privilege: user.privilege,
+          profile: profile
         }
       };
 

@@ -16,6 +16,8 @@ export namespace UserTypes {
   export interface FormData {
     name: string;
     email: string;
+    gender: number;
+    target_gender: number;
     password: string;
   }
 }
