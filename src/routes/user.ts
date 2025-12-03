@@ -1,5 +1,4 @@
 import Router from "@koa/router";
-import prisma from "../services/prisma.js";
 import type { Context } from "koa";
 import UserController from "../controllers/UserController.js";
 

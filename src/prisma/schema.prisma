@@ -43,10 +43,18 @@ model UserProfile {
   createdAt  DateTime   @default(now())
 }
 
+model InterestCategory {
+  id        Int         @id @default(autoincrement())
+  interests Interest[]
+}
+
 model Interest {
   id            Int       @id @default(autoincrement())
   name          String
+  priority      Int
   user_profiles InterestsOnProfiles[]
+  category      InterestCategory        @relation(fields: [category_id], references: [id])
+  category_id   Int
   createdAt  DateTime   @default(now())
 }
 
