@@ -14,12 +14,21 @@ router.post("/register", async (context: Context) => {
   await controller.createAccount(context);
 });
 
+router.get("/verify", async (context: Context) => {
+  await controller.verifyEmail(context);
+});
+
 router.post("/login", async (context: Context) => {
   await controller.login(context);
 });
 
 router.get("/:id", async (context: Context) => {
-  await controller.show(context);
+  // If it looks like a token, treat it as verify
+  if (context.params.id === "verify") {
+    await controller.verifyEmail(context);
+  } else {
+    await controller.show(context);
+  }
 });
 
 export default router;

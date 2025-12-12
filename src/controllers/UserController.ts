@@ -25,6 +25,10 @@ class UserController {
   async login(context: Context) {
     await userService.login(context);
   }
+
+  async verifyEmail(context: Koa.Context) {
+    await userService.verifyEmail(context);
+  }
 }
 
 export default UserController;

@@ -48,26 +48,40 @@ async function createTransporter() {
   return transporter;
 }
 
-export async function sendWelcomeEmail(to: string, name: string) {
+export async function sendWelcomeEmail(to: string, name: string, verificationToken?: string) {
   const t = await createTransporter();
   const from = process.env.FROM_EMAIL || process.env.SMTP_USER || etherealAccount?.user || 'no-reply@example.com';
+  const appUrl = process.env.APP_URL || 'http://localhost:9000';
+  const verificationUrl = verificationToken ? `${appUrl}/api/user/verify?token=${verificationToken}` : null;
+
+  const html = verificationUrl 
+    ? `
+      <h2>Hallo ${name},</h2>
+      <p>Bedankt voor het registreren!<br>
+      Klik op de link hieronder om je account te verifiëren:</p>
+      <p><a href="${verificationUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Email verifiëren</a></p>
+      <p>Of kopieer deze link in je browser:<br>${verificationUrl}</p>
+      <p>Deze link is 24 uur geldig.</p>
+    `
+    : `
+      <h2>Hallo ${name},</h2>
+      <p>Bedankt voor het registreren!<br>
+      Klik op de link in deze mail om je account te verifiëren.</p>
+    `;
 
   const info = await t.sendMail({
     from,
     to,
     subject: "Bevestig je account",
-    html: `
-      <h2>Hallo ${name},</h2>
-      <p>Bedankt voor het registreren!<br>
-      Klik op de link in deze mail om je account te verifiëren.</p>
-    `,
+    html,
   });
 
   console.log("📨 Email sendInfo:", info.messageId);
   // If using Ethereal, print preview URL
   const preview = nodemailer.getTestMessageUrl(info);
   if (preview) console.log("📬 Preview URL:", preview);
-  return info;
+  if (verificationUrl) console.log("🔗 Verification link:", verificationUrl);
+  return verificationUrl || info;
 }
 
 export default { sendWelcomeEmail };

@@ -72,6 +72,10 @@ export class UserService {
       return;
     }
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const user = await prisma.user.create({
       data: {
         name: requestBody.name,
@@ -79,20 +83,23 @@ export class UserService {
         email: requestBody.email,
         password: hashedPassword,
         privilege: 45,
+        verificationToken,
+        verificationExpiry
       }
     });
 
     // Probeer e-mail te sturen, maar vang fouten af zodat registratie niet faalt
     let mailError = null;
+    let verificationLink = null;
     try {
-      await sendWelcomeEmail(user.email, user.name);
+      verificationLink = await sendWelcomeEmail(user.email, user.name, verificationToken);
     } catch (mailErr) {
       mailError = mailErr instanceof Error ? mailErr.message : String(mailErr);
       console.error("Mail error:", mailError);
     }
 
     context.status = 200;
-    context.body = { ok: true, data: user, mailError };
+    context.body = { ok: true, data: user, mailError, verificationLink };
   } catch (err) {
     console.log(err);
     context.status = 500;
@@ -108,19 +115,21 @@ export class UserService {
       const { email, password } = JSON.parse(context.request.rawBody);
 
       const user = await prisma.user.findUnique({
-        where: { email }
+        where: { email },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          password: true,
+          emailVerified: true,
+          gender: true,
+          privilege: true
+        }
       });
 
       if (!user) {
         context.status = 401;
         context.body = { error: "Invalid email or password" };
-        return;
-      }
-
-      // Check if email is verified
-      if (!user.emailVerified) {
-        context.status = 403;
-        context.body = { error: "Please verify your email before logging in" };
         return;
       }
 
@@ -133,6 +142,12 @@ export class UserService {
         return;
       }
 
+      // Warn if email not verified
+      let verificationWarning = null;
+      if (!user.emailVerified) {
+        verificationWarning = "Email not verified yet. Check your inbox for verification link.";
+      }
+
       // Successful login
       context.status = 200;
       context.body = {
@@ -143,8 +158,57 @@ export class UserService {
           gender: user.gender,
           email: user.email,
           privilege: user.privilege
-        }
+        },
+        verificationWarning
       };
+
+    } catch (err) {
+      console.error(err);
+      context.status = 500;
+      context.body = { error: "Server error" };
+    }
+  }
+
+  // ---------------------------
+  // VERIFY EMAIL
+  // ---------------------------
+  async verifyEmail(context: Koa.Context) {
+    try {
+      const { token } = context.query;
+
+      if (!token) {
+        context.status = 400;
+        context.body = { error: "Verification token required" };
+        return;
+      }
+
+      const user = await prisma.user.findFirst({
+        where: {
+          verificationToken: String(token),
+          verificationExpiry: {
+            gt: new Date()
+          }
+        }
+      });
+
+      if (!user) {
+        context.status = 401;
+        context.body = { error: "Invalid or expired verification token" };
+        return;
+      }
+
+      // Mark email as verified
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          emailVerified: true,
+          verificationToken: null,
+          verificationExpiry: null
+        }
+      });
+
+      context.status = 200;
+      context.body = { ok: true, message: "Email verified successfully! You can now log in." };
 
     } catch (err) {
       console.error(err);
