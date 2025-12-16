@@ -1,10 +1,7 @@
 import Koa from "koa";
 import prisma from "../services/prisma.js";
 import { UserViews, type UserTypes } from "../types/User.js";
-import type { User, UserProfile } from "../generated/prisma/client.js";
 import argon2 from "argon2";
-import { textSpanContainsTextSpan } from "typescript";
-import { request } from "http";
 import { profile } from "console";
 
 export class UserService {
@@ -47,9 +44,7 @@ export class UserService {
   }
 
   async createUser(context: Koa.Context) {
-    context.status = 200;
-    context.body = context.request.body; 
-
+    console.log(`RAWBODY = ${JSON.stringify(context.request.rawBody)}`);
     try {
       const requestBody: UserTypes.FormData = JSON.parse(context.request.rawBody);
 
@@ -85,7 +80,9 @@ export class UserService {
       context.body = {ok: true};
     } catch (err) {
       context.status = 500;
+      console.log(err);
       context.body = {error: err};
+      return;
     }
     return;
   }
@@ -136,3 +133,4 @@ export class UserService {
     }
   }
 }
+

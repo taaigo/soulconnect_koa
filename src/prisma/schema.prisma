@@ -18,11 +18,12 @@ model User {
   id         Int        @id @default(autoincrement())
   name       String       
   /// 0 - 100 value 0 banned, 45 unverified user (no email verification), 50 user, 100 admin 
-  privilege  Int
-  email      String     @unique
-  password   String
+  privilege     Int
+  email         String     @unique
+  password      String
+  session_token String
 
-  profile    UserProfile?
+  profile       UserProfile?
 
   // Email verificatie
   verificationToken   String?
@@ -45,13 +46,14 @@ model UserProfile {
 
 model InterestCategory {
   id        Int         @id @default(autoincrement())
+  name      String      @unique
   interests Interest[]
 }
 
 model Interest {
   id            Int       @id @default(autoincrement())
-  name          String
-  priority      Int
+  name          String    @unique
+  priority      Int       @default(0)
   user_profiles InterestsOnProfiles[]
   category      InterestCategory        @relation(fields: [category_id], references: [id])
   category_id   Int

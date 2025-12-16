@@ -10,6 +10,8 @@ class InterestController {
 
   async index(context: Koa.Context) {}
 
-  async create(context: Koa.Context) {}
+  async create(context: Koa.Context) {
+    await interestService.create(context);
+  }
 }
 export default InterestController;

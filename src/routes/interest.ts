@@ -10,4 +10,8 @@ router.get('/', async (context: Context) => {
   return;
 });
 
+router.post('/', async (context: Context) => {
+  await controller.create(context);
+});
+
 export default router;
