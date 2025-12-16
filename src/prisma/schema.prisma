@@ -21,7 +21,7 @@ model User {
   privilege     Int
   email         String     @unique
   password      String
-  session_token String
+  session_token String? 
 
   profile       UserProfile?
 

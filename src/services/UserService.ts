@@ -3,6 +3,7 @@ import prisma from "../services/prisma.js";
 import { UserViews, type UserTypes } from "../types/User.js";
 import argon2 from "argon2";
 import { profile } from "console";
+import crypto from "node:crypto"
 
 export class UserService {
   async getAll(context: Koa.Context) {
@@ -44,7 +45,6 @@ export class UserService {
   }
 
   async createUser(context: Koa.Context) {
-    console.log(`RAWBODY = ${JSON.stringify(context.request.rawBody)}`);
     try {
       const requestBody: UserTypes.FormData = JSON.parse(context.request.rawBody);
 
@@ -94,15 +94,17 @@ export class UserService {
         where: { email: email }
       });
 
+      const sessionToken: string = await this.secureRandomString(64);
+
       if (!user) {
         context.status = 401;
         context.body = { error: "Invalid email or password" };
         return;
       }
 
-      const isValid: boolean = await argon2.verify(user.password, password);
+      //const isValid: boolean = await argon2.verify(user.password, password);
 
-      if (!isValid) {
+      /*if (!isValid) {
         context.status = 401;
         context.body = { error: "Invalid email or password" };
         return;
@@ -112,17 +114,20 @@ export class UserService {
         context.status = 403;
         context.body = { error: "Please verify your email before logging in"};
         return;
-      }
+      }*/
+
+      await prisma.user.update({
+        where: {email: email},
+        data: {
+          session_token: sessionToken
+        }
+      });
 
       context.status = 200;
       context.body = {
         ok: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          privilege: user.privilege,
-          profile: profile
+        data: {
+          "session_token": sessionToken
         }
       };
 
@@ -131,6 +136,9 @@ export class UserService {
       context.status = 500;
       context.body = { error: "Server error" };
     }
+  }
+  async secureRandomString(length: number): Promise<string> {
+      return crypto.randomBytes(Math.ceil(length / 2)).toString('hex').slice(0, length);
   }
 }
 
