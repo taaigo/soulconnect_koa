@@ -60,11 +60,14 @@ export class UserService {
         return;
       }
 
+      const sessionToken: string = await this.secureRandomString(64);
+
       await prisma.user.create({
         data: {
           name: requestBody.name,
           email: requestBody.email,
           password: hashedPassword,
+          session_token: sessionToken,
           privilege: 45,
           profile: {
             create: {
@@ -77,7 +80,7 @@ export class UserService {
       });
 
       context.status = 200;
-      context.body = {ok: true};
+      context.body = {ok: true, data: {session_token: sessionToken}};
     } catch (err) {
       context.status = 500;
       console.log(err);
@@ -89,6 +92,7 @@ export class UserService {
 
   async login(context: Koa.Context) {
     try {
+      console.log(context);
       const { email, password } = JSON.parse(context.request.rawBody);
       const user = await prisma.user.findUnique({
         where: { email: email }
@@ -102,9 +106,9 @@ export class UserService {
         return;
       }
 
-      //const isValid: boolean = await argon2.verify(user.password, password);
+      const isValid: boolean = await argon2.verify(user.password, password);
 
-      /*if (!isValid) {
+      if (!isValid) {
         context.status = 401;
         context.body = { error: "Invalid email or password" };
         return;
@@ -114,7 +118,7 @@ export class UserService {
         context.status = 403;
         context.body = { error: "Please verify your email before logging in"};
         return;
-      }*/
+      }
 
       await prisma.user.update({
         where: {email: email},
